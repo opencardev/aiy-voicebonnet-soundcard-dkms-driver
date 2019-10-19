@@ -30,7 +30,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  */
-#define DEBUG 1
+
 #include <linux/bitops.h>
 #include <linux/clk.h>
 #include <linux/delay.h>
@@ -130,13 +130,12 @@ struct bcm2835_i2s_dev {
 	struct regmap				*i2s_regmap;
 	struct clk				*clk;
 	bool					clk_prepared;
-    int                     clk_rate;
+	int					clk_rate;
 };
 
 static void bcm2835_i2s_start_clock(struct bcm2835_i2s_dev *dev)
 {
 	unsigned int master = dev->fmt & SND_SOC_DAIFMT_MASTER_MASK;
-    int status = 0;
 
 	if (dev->clk_prepared)
 		return;
@@ -144,12 +143,10 @@ static void bcm2835_i2s_start_clock(struct bcm2835_i2s_dev *dev)
 	switch (master) {
 	case SND_SOC_DAIFMT_CBS_CFS:
 	case SND_SOC_DAIFMT_CBS_CFM:
-		status = clk_prepare_enable(dev->clk);
-        pr_debug("clk_prepare_enable(dev->clk) == %d\n", status);
+		clk_prepare_enable(dev->clk);
 		dev->clk_prepared = true;
 		break;
 	default:
-        pr_debug("Non-master -- not enabling clock.\n");
 		break;
 	}
 }
@@ -424,18 +421,18 @@ static int bcm2835_i2s_hw_params(struct snd_pcm_substream *substream,
 
 	/* Clock should only be set up here if CPU is clock master */
 	if (bit_clock_master &&
-        (!dev->clk_prepared || dev->clk_rate != bclk_rate)) {
-      if (dev->clk_prepared)
-        bcm2835_i2s_stop_clock(dev);
+	    (!dev->clk_prepared || dev->clk_rate != bclk_rate)) {
+		if (dev->clk_prepared)
+			bcm2835_i2s_stop_clock(dev);
 
-      if (dev->clk_rate != bclk_rate) {
-		ret = clk_set_rate(dev->clk, bclk_rate);
-		if (ret)
-			return ret;
-        dev->clk_rate = bclk_rate;
-      }
+		if (dev->clk_rate != bclk_rate) {
+			ret = clk_set_rate(dev->clk, bclk_rate);
+			if (ret)
+				return ret;
+			dev->clk_rate = bclk_rate;
+		}
 
-      bcm2835_i2s_start_clock(dev);
+		bcm2835_i2s_start_clock(dev);
 	}
 
 	/* Setup the frame format */
@@ -943,9 +940,3 @@ MODULE_ALIAS("platform:bcm2835-i2s");
 MODULE_DESCRIPTION("BCM2835 I2S interface");
 MODULE_AUTHOR("Florian Meier <florian.meier@koalo.de>");
 MODULE_LICENSE("GPL v2");
-/*
- * MODULE_VERSION must compare greater than "8E6E1A33B1853A97BE81553",
- * the promoted 'srcversion' of the existing kernel driver.
- * https://github.com/dell/dkms/pull/5
- */
-MODULE_VERSION("8F");

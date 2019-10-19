@@ -39,7 +39,7 @@ static int snd_rpi_aiy_voicebonnet_init(struct snd_soc_pcm_runtime *rtd) {
   int ret;
   struct snd_soc_dai *codec_dai = rtd->codec_dai;
   struct snd_soc_card *card = rtd->card;
-  rt5645_sel_asrc_clk_src(rtd->codec,
+  rt5645_sel_asrc_clk_src(codec_dai->component,
                           RT5645_DA_STEREO_FILTER |
                           RT5645_AD_STEREO_FILTER |
                           RT5645_DA_MONO_L_FILTER |
@@ -58,7 +58,7 @@ static int snd_rpi_aiy_voicebonnet_init(struct snd_soc_pcm_runtime *rtd) {
     return ret;
   }
 
-  return rt5645_set_jack_detect(rtd->codec, &headset_jack, NULL, NULL);
+  return rt5645_set_jack_detect(codec_dai->component, &headset_jack, NULL, NULL);
 }
 
 static int snd_rpi_aiy_voicebonnet_hw_params(
